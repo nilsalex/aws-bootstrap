@@ -49,6 +49,38 @@ resource "aws_iam_user" "nils" {
   name = "nils"
 }
 
+data "aws_iam_policy_document" "manage_own_access_keys" {
+  statement {
+    sid = "ManageOwnAccessKeys"
+    actions = [
+      "iam:CreateAccessKey",
+      "iam:DeleteAccessKey",
+      "iam:GetAccessKeyLastUsed",
+      "iam:GetUser",
+      "iam:ListAccessKeys",
+      "iam:UpdateAccessKey",
+      "iam:ListMFADevices",
+      "iam:CreateVirtualMFADevice",
+      "iam:DeleteVirtualMFADevice",
+      "iam:ListVirtualMFADevices",
+      "iam:DeactivateMFADevice",
+      "iam:EnableMFADevice",
+      "iam:ResyncMFADevice",
+    ]
+    resources = [
+      "arn:aws:iam::*:user/$${aws:username}",
+      "arn:aws:iam::*:mfa/$${aws:username}",
+    ]
+  }
+}
+
+resource "aws_iam_user_policy" "manage_own_access_keys" {
+  name   = "ManageOwnAccessKeys"
+  user   = aws_iam_user.nils.name
+  policy = data.aws_iam_policy_document.manage_own_access_keys.json
+}
+
+
 data "aws_iam_policy_document" "administrator_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
